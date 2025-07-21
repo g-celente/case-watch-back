@@ -1,0 +1,108 @@
+org: gcelente
+app: g-celente
+
+service: case-watch-backend
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-2
+  
+  environment:
+    NODE_ENV: ${env:NODE_ENV}
+    DATABASE_URL: ${env:DATABASE_URL}
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN, '7d'}
+    LOG_LEVEL: ${env:LOG_LEVEL, 'info'}
+    CORS_ORIGIN: ${env:CORS_ORIGIN, '*'}
+  
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+  
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - X-Amz-Date
+        - Authorization
+        - X-Api-Key
+        - X-Amz-Security-Token
+        - X-Amz-User-Agent
+        - X-Requested-With
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+      allowCredentials: false
+      maxAge: 3600
+
+functions:
+  api:
+    handler: lambda.handler
+    events:
+      - httpApi:
+          path: "/{proxy+}"
+          method: ANY
+      - httpApi:
+          path: "/"
+          method: ANY
+    timeout: 30
+    memorySize: 512
+    environment:
+      NODE_ENV: ${env:NODE_ENV}
+
+# Plugins corretos (SEM serverless-http)
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3056
+    lambdaPort: 4000
+    host: 0.0.0.0
+    stage: local
+    noAuth: true
+    corsAllowCredentials: true
+    corsAllowHeaders: 'accept,content-type,x-api-key,authorization'
+    corsAllowOrigin: '*'
+    corsExposedHeaders: 'WWW-Authenticate,Server-Authorization'
+    corsMaxAge: 86400
+
+package:
+  individually: true
+  patterns:
+    - 'src/**'
+    - 'lambda.js'
+    - 'prisma/schema.prisma'
+    - 'node_modules/.prisma/**'
+    - 'node_modules/@prisma/**'
+    - '!node_modules/aws-sdk/**'
+    - '!tests/**'
+    - '!.env*'
+    - '!*.md'
+
+outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value:
+      Fn::Join:
+        - ''
+        - - https://
+          - Ref: HttpApi
+          - .execute-api.
+          - us-east-2
+          - .amazonaws.com
