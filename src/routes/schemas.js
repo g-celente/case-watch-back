@@ -133,7 +133,15 @@ export const taskSchemas = {
       description: z.string().max(1000, 'Descrição deve ter no máximo 1000 caracteres').optional(),
       priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional().default('MEDIUM'),
       dueDate: z.string().datetime('Data deve estar no formato ISO 8601').optional(),
-      categoryId: z.string().cuid('ID da categoria deve ser um CUID válido').optional()
+      categoryId: z.string().cuid('ID da categoria deve ser um CUID válido').optional(),
+      assigneeId: z.string().cuid('ID do responsável deve ser um CUID válido').optional(),
+      status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional().default('PENDING'),
+      collaborators: z.array(
+        z.object({
+          userId: z.string().cuid('ID do colaborador deve ser um CUID válido'),
+          role: z.enum(['VIEWER', 'EDITOR', 'ADMIN']).default('VIEWER')
+        })
+      ).optional().default([])
     })
   }),
 

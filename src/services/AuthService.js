@@ -174,11 +174,10 @@ export class AuthService {
       const { currentPassword, newPassword } = passwordData;
 
       // Busca o usuário
-      const user = await this.userRepository.findByEmail(userId);
+      const user = await this.userRepository.findById(userId);
       if (!user) {
         throw new Error('Usuário não encontrado');
       }
-
       // Verifica a senha atual
       const isValidPassword = await PasswordUtils.compare(currentPassword, user.password);
       if (!isValidPassword) {

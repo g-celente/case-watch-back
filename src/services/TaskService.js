@@ -65,7 +65,9 @@ export class TaskService {
   async createTask(taskData) {
     try {
       const { title, description, priority, dueDate, categoryId, ownerId } = taskData;
+      // Verifica se o título é forneci
 
+      console.log(taskData)
       // Valida categoria se fornecida
       if (categoryId) {
         const categoryExists = await this.categoryRepository.existsById(categoryId);
@@ -97,10 +99,21 @@ export class TaskService {
         categoryId,
         ownerId
       });
-      
+
       // Se a tarefa foi atribuída para outra pessoa, criar assignment
       if (taskData.assigneeId && taskData.assigneeId !== ownerId) {
-        await this.taskRepository.assignTask(task.id, taskData.assigneeId);
+        await this.taskRepository.assignUser(task.id, taskData.assigneeId);
+      }
+      if (Array.isArray(taskData.collaborators) && taskData.collaborators.length > 0) {
+        for (const collaborator of taskData.collaborators) {
+          if (collaborator.userId && collaborator.role) {
+            await this.taskRepository.addCollaborator(
+              task.id,
+              collaborator.userId,
+              collaborator.role
+            );
+          }
+        }
       }
 
       return task;

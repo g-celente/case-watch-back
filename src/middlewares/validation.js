@@ -5,6 +5,7 @@ import logger from '../config/logger.js';
 export const validate = (schema) => {
   return (req, res, next) => {
     try {
+
       const { body, query, params } = req;
       
       // Valida os dados de acordo com o schema

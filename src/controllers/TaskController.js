@@ -68,7 +68,7 @@ export class TaskController {
 
   async createTask(req, res, next) {
     try {
-      const { title, description, priority, dueDate, categoryId } = req.validatedData.body;
+      const { title, description, priority, dueDate, categoryId, assigneeId, collaborators } = req.validatedData.body;
       const userId = req.user.id;
 
       const task = await this.taskService.createTask({
@@ -77,7 +77,9 @@ export class TaskController {
         priority,
         dueDate,
         categoryId,
-        ownerId: userId
+        ownerId: userId,
+        assigneeId,
+        collaborators: collaborators || []
       });
 
       logger.info('Tarefa criada com sucesso', { 
